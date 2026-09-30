@@ -1,0 +1,47 @@
+name: Bug report
+description: Report a reproducible problem in MyRide
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not attach real GPS histories, medical information, emergency contacts, archives, or API keys.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open ...
+        2. Select ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, operating system, device, and MyRide version or commit.
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Storage mode
+      options:
+        - Local only
+        - Supabase sync enabled
+        - Unknown
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized diagnostics
+      description: Include only logs or screenshots that contain no private journal data or credentials.

@@ -1,0 +1,48 @@
+import { expect, test } from '@playwright/test'
+
+test('receipt total and price per litre edits recalculate the same trip fuel cost', async ({ page }) => {
+  await page.goto('/garage')
+  await page.getByLabel('Manufacturer').fill('Honda')
+  await page.getByLabel('Model', { exact: true }).fill('CB350')
+  await page.getByLabel('Nickname').fill('Cost bike')
+  await page.getByRole('button', { name: 'Add motorcycle' }).click()
+  await expect(page.getByRole('heading', { name: 'Cost bike' })).toBeVisible()
+
+  await page.goto('/trips/new')
+  await page.getByLabel('Trip name').fill('Fuel cost ride')
+  await page.getByLabel('Start location').fill('Chennai')
+  await page.getByLabel('Destination', { exact: true }).fill('Pondicherry')
+  await page.getByLabel('Motorcycle').selectOption({ label: 'Cost bike' })
+  await page.getByRole('button', { name: 'Create trip' }).click()
+  await expect(page.getByRole('heading', { name: 'Fuel cost ride' })).toBeVisible()
+  const tripId = new URL(page.url()).pathname.split('/').at(-1)!
+
+  await page.goto('/fuel')
+  await page.getByLabel('Odometer km').fill('10000')
+  await page.getByLabel('Litres').fill('10')
+  await page.getByLabel('Total cost').fill('900')
+  await page.getByLabel('Trip').selectOption({ label: 'Fuel cost ride' })
+  await page.getByRole('button', { name: 'Log fuel' }).click()
+  await expect(page.getByText('INR 900').first()).toBeVisible()
+
+  await page.goto(`/trips/${tripId}`)
+  await page.getByRole('navigation', { name: 'Trip sections' }).getByRole('link', { name: 'Fuel' }).click()
+  await expect(page.getByText('INR 900').first()).toBeVisible()
+  await page.getByRole('button', { name: 'Edit fuel fill at 10,000 km' }).click()
+  await page.getByLabel('Price / litre').fill('95')
+  await expect(page.getByLabel('Total cost')).toHaveValue('')
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  await expect(page.getByText('INR 950').first()).toBeVisible()
+
+  await page.goto('/fuel')
+  await page.getByRole('button', { name: 'Edit fuel fill at 10,000 km' }).click()
+  await page.getByLabel('Total cost').fill('920')
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  await expect(page.getByText('INR 920').first()).toBeVisible()
+  await page.goto(`/trips/${tripId}`)
+  await expect(page.getByText('Recorded cost').locator('..').locator('dd > span').first()).toHaveText('INR 920')
+  await page.getByRole('navigation', { name: 'Trip sections' }).getByRole('link', { name: 'Expenses' }).click()
+  const tripCost = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Trip Cost', exact: true }) })
+  await expect(tripCost.getByText('Fuel', { exact: true }).locator('..').locator('dd')).toHaveText('INR 920')
+  await expect(tripCost.getByText('Total', { exact: true }).locator('..').locator('dd')).toHaveText('INR 920')
+})

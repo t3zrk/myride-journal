@@ -11,17 +11,16 @@ interface PageHeaderProps {
 
 export function PageHeader({ eyebrow, title, description, actions, journalTitle = false }: PageHeaderProps) {
   return (
-    <header className="relative flex flex-col gap-4 border-b border-stone-200 pb-5 md:flex-row md:items-end md:justify-between md:pb-6">
+    <header className="relative grid gap-5 pb-2 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
       <div className="min-w-0">
-        <div className="flex items-center gap-2.5">
-          <span aria-hidden="true" className="h-0.5 w-7 bg-amber-600" />
-          <p className="text-xs font-semibold text-teal-900">{eyebrow}</p>
+        <div className="mb-3 flex items-center gap-3">
+          <span aria-hidden="true" className="h-px w-9 bg-amber-700" />
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-teal-900">{eyebrow}</p>
         </div>
-        <h1 className={cn('page-heading mt-1 text-stone-950', journalTitle && 'font-journal font-normal')}>{title}</h1>
-        {description ? <div className="mt-2 max-w-3xl text-sm leading-6 text-stone-600">{description}</div> : null}
+        <h1 className={cn('page-heading text-stone-950', journalTitle && 'font-journal')}>{title}</h1>
+        {description ? <div className="mt-3 max-w-3xl text-sm leading-6 text-stone-600 md:text-[15px]">{description}</div> : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2 md:justify-end">{actions}</div> : null}
-      <span aria-hidden="true" className="absolute -bottom-px left-0 h-px w-20 bg-teal-800" />
     </header>
   )
 }

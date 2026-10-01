@@ -2,6 +2,13 @@
 
 All notable changes to MyRide are documented here. The project follows [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- Refined the interface with an editorial motorcycle-journal design across navigation, dashboard, trip archive, garage, fuel, expenses, forms, and responsive states.
+- Updated portfolio screenshots to reflect the current desktop and mobile experience.
+
 ## [1.0.0] - 2026-09-30
 
 ### Added

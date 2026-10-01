@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
-import { Bike, CircleDollarSign, Fuel, Wrench } from 'lucide-react'
+import { ArrowUpRight, Bike, CircleDollarSign, Fuel, MapPin, Route, ShieldCheck, Wrench } from 'lucide-react'
 import { Button, ButtonLink } from '../components/ui/Button'
 import { ReadinessChecklist } from '../components/ReadinessChecklist'
 import { EmptyState } from '../components/ui/EmptyState'
@@ -33,10 +33,10 @@ export function DashboardPage() {
   }, [])
 
   if (isLoading || !data) {
-    return <div className="grid gap-4"><div className="h-40 animate-pulse rounded-md bg-stone-200" /><div className="h-28 animate-pulse rounded-md bg-stone-200" /></div>
+    return <div className="grid gap-5"><div className="h-52 animate-pulse rounded-[20px] bg-stone-200" /><div className="h-40 animate-pulse rounded-[20px] bg-stone-200" /></div>
   }
-  const dashboard = data
 
+  const dashboard = data
   const activeTrip = data.trips.find((trip) => trip.status === 'Active')
   const recentTrip = activeTrip ?? [...data.trips].filter((trip) => trip.status === 'Completed').sort((a, b) => b.startDate.localeCompare(a.startDate))[0]
   const activeMotorcycle = data.motorcycles.find((motorcycle) => motorcycle.active)
@@ -49,7 +49,7 @@ export function DashboardPage() {
   const serviceHealth = estimateServiceHealth(currentOdometer, activeMotorcycle?.serviceIntervalKm, lastService?.odometerKm)
   const readiness = serviceHealth === 'GOOD' ? 'READY' : serviceHealth === 'DUE' || serviceHealth === 'OVERDUE' ? 'DUE' : 'ATTENTION'
   const readinessLabel = activeMotorcycle ? readiness : 'SETUP NEEDED'
-  const readinessTone = !activeMotorcycle ? 'text-stone-600' : readiness === 'READY' ? 'text-green-700' : readiness === 'DUE' ? 'text-amber-700' : 'text-red-700'
+  const readinessTone = !activeMotorcycle ? 'text-stone-600' : readiness === 'READY' ? 'text-teal-800' : readiness === 'DUE' ? 'text-amber-800' : 'text-red-700'
   const showMaintenanceReminder = settings?.maintenanceRemindersEnabled && activeMotorcycle && (serviceHealth === 'DUE' || serviceHealth === 'OVERDUE')
   const milestones = deriveMilestones({ trips: data.trips, fuelLogs: data.fuelLogs, weather: data.weather, maintenance: data.maintenance })
   const activity = [
@@ -89,102 +89,119 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="grid gap-6 md:gap-8">
-      <PageHeader eyebrow="Riding journal" title="MyRide" journalTitle actions={
-        <>
-          <ButtonLink to="/trips/new"><Bike size={18} /> Create trip</ButtonLink>
-          <ButtonLink to="/expenses" variant="outline"><CircleDollarSign size={18} /> Add expense</ButtonLink>
-        </>
-      } />
+    <div className="grid gap-8 md:gap-10">
+      <PageHeader
+        eyebrow="Riding journal"
+        title="MyRide"
+        journalTitle
+        description="A quiet record of the road: journeys, fuel, maintenance and the motorcycle behind them."
+        actions={<>
+          <ButtonLink to="/trips/new"><Bike size={17} /> Create trip</ButtonLink>
+          <ButtonLink to="/fuel" variant="outline"><Fuel size={17} /> Log fuel</ButtonLink>
+        </>}
+      />
 
-      {showMaintenanceReminder ? <section role="status" className="flex flex-wrap items-center justify-between gap-4 border-l-4 border-amber-600 bg-amber-50 px-5 py-4"><div><p className="font-semibold text-stone-950">Maintenance {serviceHealth === 'OVERDUE' ? 'overdue' : 'due'}</p><p className="text-sm text-stone-700">{activeMotorcycle.nickname || activeMotorcycle.model} | {formatKm(currentOdometer)}</p></div><ButtonLink to={`/garage/${activeMotorcycle.id}`} variant="outline">Open dossier</ButtonLink></section> : null}
+      {showMaintenanceReminder ? <section role="status" className="surface-muted flex flex-wrap items-center justify-between gap-4 border-l-[3px] border-l-amber-700 px-5 py-4"><div><p className="font-semibold text-stone-950">Maintenance {serviceHealth === 'OVERDUE' ? 'overdue' : 'due'}</p><p className="mt-1 text-sm text-stone-600">{activeMotorcycle.nickname || activeMotorcycle.model} · {formatKm(currentOdometer)}</p></div><ButtonLink to={`/garage/${activeMotorcycle.id}`} variant="outline">Open dossier</ButtonLink></section> : null}
 
-      <Section title="Current / Recent Trip">
-        {!recentTrip ? (
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(21rem,.7fr)]">
+        {recentTrip ? (
+          <article className="surface-ink relative isolate min-h-[22rem] overflow-hidden p-6 sm:p-8">
+            <div className="relative flex h-full flex-col">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-teal-100/70">{recentTrip.status === 'Active' ? 'Ride in progress' : 'Latest journey'}</p>
+                <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/75">{formatDate(recentTrip.startDate)}</span>
+              </div>
+              <div className="my-auto py-8">
+                <div className="mb-4 flex items-center gap-2 text-amber-300"><Route size={18} /><span className="text-sm font-semibold">{recentTrip.origin.label} → {recentTrip.destination.label}</span></div>
+                <h2 className="font-journal max-w-3xl text-4xl leading-[.98] text-white sm:text-5xl md:text-6xl">{recentTrip.title}</h2>
+                {recentTrip.status === 'Active' ? <p className="mt-5 max-w-2xl text-sm leading-6 text-teal-50/65">{data.activeGpsPoint ? `Last GPS point recorded ${formatDate(data.activeGpsPoint.timestamp, true)}.` : 'The trip is active. Location has not been recorded yet.'}</p> : null}
+              </div>
+              <div className="grid gap-5 border-t border-white/10 pt-5 sm:grid-cols-[1fr_1fr_1fr_auto] sm:items-end">
+                <div><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-white/60">Distance</p><p className="metric-number mt-1 text-xl font-semibold text-white">{formatKm(recentTrip.distanceKm)}</p></div>
+                <div><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-white/60">Duration</p><p className="metric-number mt-1 text-xl font-semibold text-white">{recentTrip.status === 'Active' ? formatDuration(Math.max(0, Math.floor((now - Date.parse(recentTrip.startDate)) / 60000))) : formatDuration(recentTrip.durationMinutes)}</p></div>
+                <div><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-white/60">Motorcycle</p><p className="mt-1 truncate text-xl font-semibold text-white">{data.historicalMotorcycles.find((bike) => bike.id === recentTrip.motorcycleId)?.nickname || data.historicalMotorcycles.find((bike) => bike.id === recentTrip.motorcycleId)?.model || 'Unassigned'}</p></div>
+                <ButtonLink to={`/trips/${recentTrip.id}`} variant="outline" className="border-white/20 bg-white/10 text-white hover:border-white/35 hover:bg-white/15 hover:text-white">Open trip <ArrowUpRight size={16} /></ButtonLink>
+              </div>
+            </div>
+          </article>
+        ) : (
           <EmptyState title="MY RIDING JOURNAL">
             <p>No trips recorded yet.</p>
-            <p>Your motorcycle journal starts here. Record your first journey and MyRide will build your riding history automatically.</p>
+            <p>The archive starts with the first road you choose to record.</p>
             <ButtonLink to="/trips/new" className="mt-5">Create first trip</ButtonLink>
           </EmptyState>
-        ) : (
-          <article className="surface-panel p-5 md:p-6">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-              <div>
-                <p className="text-xs font-semibold uppercase text-teal-900">{recentTrip.status}</p>
-                <h2 className="font-journal mt-1 text-3xl">{recentTrip.title}</h2>
-                <p className="mt-2 text-stone-600">{recentTrip.origin.label} to {recentTrip.destination.label}</p>
-                {recentTrip.status === 'Active' ? <p className="mt-2 text-sm text-stone-600">{data.activeGpsPoint ? `Last recorded position: ${data.activeGpsPoint.latitude.toFixed(5)}, ${data.activeGpsPoint.longitude.toFixed(5)} at ${formatDate(data.activeGpsPoint.timestamp, true)}` : 'Location not recorded yet.'}</p> : null}
-              </div>
-              <ButtonLink to={`/trips/${recentTrip.id}`} variant="outline">Open trip</ButtonLink>
-            </div>
-            <dl className="mt-6 grid gap-4 sm:grid-cols-3">
-              <Stat label="Distance" value={formatKm(recentTrip.distanceKm)} />
-              <Stat label="Duration" value={recentTrip.status === 'Active' ? formatDuration(Math.max(0, Math.floor((now - Date.parse(recentTrip.startDate)) / 60000))) : formatDuration(recentTrip.durationMinutes)} />
-              <Stat label="Motorcycle" value={data.historicalMotorcycles.find((bike) => bike.id === recentTrip.motorcycleId)?.nickname || data.historicalMotorcycles.find((bike) => bike.id === recentTrip.motorcycleId)?.model || 'Unassigned'} />
-            </dl>
-          </article>
         )}
-      </Section>
 
-      <section className="grid gap-6 lg:grid-cols-2">
-        <Section title="Motorcycle Status">
-          <div className="border-t border-stone-200 pt-4">
-            {activeMotorcycle ? (
-              <>
-                <h3 className="text-xl font-semibold">{activeMotorcycle.nickname || `${activeMotorcycle.manufacturer} ${activeMotorcycle.model}`}</h3>
-                <dl className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <Stat label="Odometer" value={formatKm(currentOdometer)} />
-                  <Stat label="Recent mileage" value={formatMileage(activeAnalytics?.recentAverageMileage)} detail={`${activeAnalytics?.verifiedIntervals ?? 0} full-tank intervals`} />
-                  <Stat label="Safe range" value={range ? `~${formatKm(range)}` : 'Not enough data'} />
-                  <Stat label="Service status" value={serviceHealth} detail={lastService ? `Last service at ${formatKm(lastService.odometerKm)}` : 'No qualifying service recorded'} />
-                </dl>
-              </>
-            ) : (
-              <EmptyState title={data.motorcycles.length ? 'NO ACTIVE MOTORCYCLE' : 'NO MOTORCYCLE'}>{data.motorcycles.length ? 'Select an active motorcycle in Garage to show its service status, mileage, and range.' : 'Add your motorcycle to unlock service status, mileage, and range estimates.'}</EmptyState>
-            )}
+        <aside className="surface-panel flex flex-col p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">Motorcycle status</p>
+              <h2 className="font-serif mt-2 text-3xl leading-none text-stone-950">{activeMotorcycle ? activeMotorcycle.nickname || `${activeMotorcycle.manufacturer} ${activeMotorcycle.model}` : 'No active motorcycle'}</h2>
+            </div>
+            <span className={`rounded-full bg-stone-100 px-3 py-1 text-xs font-bold ${readinessTone}`}>{readinessLabel}</span>
+          </div>
+          {activeMotorcycle ? <>
+            <dl className="mt-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
+              <Stat label="Odometer" value={formatKm(currentOdometer)} />
+              <Stat label="Recent mileage" value={formatMileage(activeAnalytics?.recentAverageMileage)} detail={`${activeAnalytics?.verifiedIntervals ?? 0} verified intervals`} />
+              <Stat label="Safe range" value={range ? `~${formatKm(range)}` : 'Not enough data'} />
+              <Stat label="Service status" value={serviceHealth} detail={lastService ? `Last at ${formatKm(lastService.odometerKm)}` : 'No service baseline'} />
+            </dl>
+            <div className="mt-auto pt-6"><ButtonLink to={`/garage/${activeMotorcycle.id}`} variant="ghost" className="px-0 text-teal-900 hover:bg-transparent">Open motorcycle dossier <ArrowUpRight size={15} /></ButtonLink></div>
+          </> : <div className="mt-6 text-sm leading-6 text-stone-600"><p>Add a motorcycle in Garage to calculate its current mileage, range and service readiness.</p><ButtonLink to="/garage" variant="outline" className="mt-5">Open garage</ButtonLink></div>}
+        </aside>
+      </section>
+
+      <section className="grid gap-5 lg:grid-cols-[1fr_1fr]">
+        <div className="surface-panel p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">Lifetime record</p><h2 className="font-serif mt-1 text-3xl">The road so far</h2></div>
+            <MapPin className="text-teal-900" size={22} />
+          </div>
+          <dl className="mt-7 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <Stat label="Total distance" value={formatKm(data.stats.totalDistanceKm)} />
+            <Stat label="Riding time" value={formatDuration(data.stats.totalDurationMinutes)} />
+            <Stat label="Trips" value={`${data.stats.tripCount}`} />
+            <Stat label="Fuel" value={formatFuelVolume(data.stats.totalFuelLitres)} />
+            <Stat label="Lifetime mileage" value={formatMileage(data.stats.lifetimeMileageKmPerLitre)} />
+            <Stat label="Total expenses" value={formatMoney(data.stats.totalExpenses)} />
+          </dl>
+        </div>
+
+        <div className="surface-panel p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-4">
+            <div><p className="text-[11px] font-bold uppercase tracking-[0.14em] text-stone-500">Ride readiness</p><h2 className={`font-serif mt-1 text-3xl ${readinessTone}`}>{readinessLabel}</h2></div>
+            <ShieldCheck className="text-teal-900" size={24} />
+          </div>
+          <p className="mt-4 text-sm leading-6 text-stone-600">{activeMotorcycle ? 'Service readiness is derived from your odometer, service interval and qualifying service records.' : 'Activate a motorcycle to calculate service readiness.'}</p>
+          {activeMotorcycle ? <details className="mt-5 border-t border-stone-200 pt-4"><summary className="min-h-10 cursor-pointer font-semibold text-stone-800">Open pre-ride checklist</summary><div className="mt-4"><ReadinessChecklist tripId={activeTrip?.id} motorcycleId={activeMotorcycle.id} /></div></details> : null}
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,.65fr)]">
+        <Section title="Recent Activity">
+          <div className="divide-y divide-stone-200 border-y border-stone-200">
+            {activity.map((item) => (
+              <Link key={item.id} to={item.to} className="group grid min-h-16 grid-cols-[1fr_auto] items-center gap-4 py-3.5 transition hover:text-teal-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800">
+                <div className="min-w-0"><p className="truncate font-semibold">{item.title}</p><p className="mt-0.5 text-xs text-stone-500">{formatDate(item.at, true)}</p></div>
+                <div className="flex items-center gap-2"><span className="text-sm text-stone-600">{item.detail}</span><ArrowUpRight size={15} className="text-stone-400 transition group-hover:text-teal-900" /></div>
+              </Link>
+            ))}
+            {activity.length === 0 ? <p className="py-5 text-sm text-stone-600">Recent trips, fuel fills, expenses and maintenance will appear here.</p> : null}
           </div>
         </Section>
 
-        <Section title="Readiness">
-          <div className="border-t border-stone-200 pt-4">
-            <p className={`text-2xl font-semibold ${readinessTone}`}>{readinessLabel}</p>
-            <p className="mt-2 text-sm leading-6 text-stone-600">{activeMotorcycle ? 'Estimated from a general or engine-oil service record and your service interval. Other work does not reset this estimate.' : 'Add and activate a motorcycle to calculate service readiness.'}</p>
-            {activeMotorcycle ? <details className="mt-4"><summary className="min-h-12 cursor-pointer font-semibold">Pre-ride checklist</summary><ReadinessChecklist tripId={activeTrip?.id} motorcycleId={activeMotorcycle.id} /></details> : null}
+        <Section title="Quick Actions">
+          <div className="grid gap-2">
+            <ButtonLink to="/trips/new" className="w-full justify-between rounded-xl"><span className="flex items-center gap-2"><Bike size={17} /> Create trip</span><ArrowUpRight size={16} /></ButtonLink>
+            <ButtonLink to="/fuel" className="w-full justify-between rounded-xl" variant="outline"><span className="flex items-center gap-2"><Fuel size={17} /> Log fuel</span><ArrowUpRight size={16} /></ButtonLink>
+            <ButtonLink to="/expenses" className="w-full justify-between rounded-xl" variant="outline"><span className="flex items-center gap-2"><CircleDollarSign size={17} /> Add expense</span><ArrowUpRight size={16} /></ButtonLink>
+            <ButtonLink to="/garage" className="w-full justify-between rounded-xl" variant="outline"><span className="flex items-center gap-2"><Wrench size={17} /> Maintenance</span><ArrowUpRight size={16} /></ButtonLink>
           </div>
         </Section>
       </section>
 
-      <Section title="Lifetime Statistics">
-        <dl className="surface-panel grid gap-5 p-5 sm:grid-cols-2 lg:grid-cols-5">
-          <Stat label="Total distance" value={formatKm(data.stats.totalDistanceKm)} />
-          <Stat label="Riding time" value={formatDuration(data.stats.totalDurationMinutes)} />
-          <Stat label="Trips" value={`${data.stats.tripCount}`} />
-          <Stat label="Fuel" value={formatFuelVolume(data.stats.totalFuelLitres)} />
-          <Stat label="Lifetime mileage" value={formatMileage(data.stats.lifetimeMileageKmPerLitre)} />
-        </dl>
-      </Section>
-
-      <Section title="Recent Activity">
-        <div className="grid gap-3">
-          {activity.map((item) => (
-            <Link key={item.id} to={item.to} className="flex min-h-12 items-center justify-between gap-3 border-b border-stone-200 py-3 transition hover:border-teal-900 hover:text-teal-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-800">
-              <span className="font-semibold">{item.title}</span>
-              <span className="text-sm text-stone-600">{item.detail}</span>
-            </Link>
-          ))}
-          {activity.length === 0 ? <p className="text-stone-600">Recent trips, fuel fills, expenses, and maintenance will appear once recorded.</p> : null}
-        </div>
-      </Section>
-
-      <Section title="Quick Actions">
-        <div className="grid gap-3 sm:grid-cols-4">
-          <ButtonLink to="/trips/new" className="w-full"><Bike size={18} /> Create trip</ButtonLink>
-          <ButtonLink to="/fuel" className="w-full" variant="outline"><Fuel size={18} /> Log fuel</ButtonLink>
-          <ButtonLink to="/expenses" className="w-full" variant="outline"><CircleDollarSign size={18} /> Add expense</ButtonLink>
-          <ButtonLink to="/garage" className="w-full" variant="outline"><Wrench size={18} /> Maintenance</ButtonLink>
-        </div>
-      </Section>
-      {settings?.aiEnabled ? <Section title="Ask MyRide"><form onSubmit={askMyRide} className="grid gap-3 sm:grid-cols-[1fr_auto]"><Input aria-label="Ask MyRide a question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What was my longest trip?" /><Button type="submit" disabled={asking}>{asking ? 'Asking...' : 'Ask'}</Button></form>{answer ? <p role="status" className="mt-4 border-l-4 border-teal-900 pl-4 text-stone-700">{answer}</p> : null}{explanation ? <p className="mt-3 text-sm text-stone-600">{explanation}</p> : null}{aiMessage ? <p role="status" className="mt-3 text-sm text-amber-800">{aiMessage}</p> : null}</Section> : null}
+      {settings?.aiEnabled ? <Section title="Ask MyRide"><div className="surface-panel overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 bg-stone-50/65 px-4 py-3.5 sm:px-5"><div><p className="text-sm font-semibold text-stone-950">Ask your riding journal</p><p className="mt-0.5 text-xs text-stone-500">Answers are calculated locally before any optional model explanation.</p></div><span className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${settings.aiProvider === 'openai' ? 'border-teal-200 bg-teal-50 text-teal-950' : 'border-stone-200 bg-white text-stone-600'}`}>{settings.aiProvider === 'openai' ? 'Optional OpenAI context' : 'Local answer'}</span></div><div className="p-4 sm:p-5"><form onSubmit={askMyRide} className="grid gap-3 sm:grid-cols-[1fr_auto]"><Input aria-label="Ask MyRide a question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What was my longest trip?" /><Button type="submit" disabled={asking}>{asking ? 'Asking...' : 'Ask'}</Button></form>{answer ? <div role="status" className="mt-5 rounded-xl border border-stone-200 bg-stone-50/70 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-teal-800">Journal answer</p><p className="mt-2 text-sm leading-6 text-stone-800">{answer}</p>{explanation ? <><div className="my-3 h-px bg-stone-200" /><p className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Model context</p><p className="mt-1.5 text-sm leading-6 text-stone-600">{explanation}</p></> : null}</div> : null}{aiMessage ? <p role="status" className="mt-3 text-sm text-amber-800">{aiMessage}</p> : null}</div></div></Section> : null}
     </div>
   )
 }

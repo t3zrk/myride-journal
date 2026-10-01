@@ -18,17 +18,17 @@ export function SyncIndicator() {
   }, [])
   const label = !online ? 'Offline' : !isSupabaseConfigured ? 'Local only' : syncMessage === 'Sync error' ? 'Sync error' : syncMessage === 'Syncing...' ? 'Syncing...' : queued > 0 ? `${queued} queued` : 'Synced'
   const tone = !online || queued > 0
-    ? 'border-amber-300 bg-amber-50 text-amber-800'
+    ? 'border-amber-300/80 bg-amber-50/80 text-amber-800'
     : syncMessage === 'Sync error'
-      ? 'border-red-300 bg-red-50 text-red-800'
+      ? 'border-red-300/80 bg-red-50/80 text-red-800'
       : isSupabaseConfigured
-        ? 'border-green-300 bg-green-50 text-green-800'
-        : 'border-stone-300 bg-white text-stone-600'
+        ? 'border-teal-200 bg-teal-50/80 text-teal-900'
+        : 'border-stone-200 bg-white/60 text-stone-600'
 
   return (
-    <div className={cn('inline-flex items-center justify-self-end gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold shadow-sm sm:px-3', tone)} title={`Storage status: ${label}`}>
-      {online ? <Cloud size={14} aria-hidden="true" /> : <CloudOff size={14} aria-hidden="true" />}
-      <span>{label}</span>
+    <div className={cn('inline-flex items-center justify-self-end gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold', tone)} title={`Storage status: ${label}`}>
+      {online ? <Cloud size={13} aria-hidden="true" /> : <CloudOff size={13} aria-hidden="true" />}
+      <span className="hidden sm:inline">{label}</span>
     </div>
   )
 }

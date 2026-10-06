@@ -12,6 +12,7 @@ import { Stat } from '../components/ui/Stat'
 import { useDashboardData, useSettings } from '../hooks/useMyRideData'
 import { answerStructuredQuestion, isSensitiveAssistantQuestion } from '../services/ai/assistant'
 import { explainWithCloud } from '../services/ai/cloud'
+import { deviceAiProviders } from '../services/ai/deviceAi'
 import { deriveMilestones } from '../services/achievements'
 import { estimateSafeRangeKm, fuelAnalytics } from '../services/fuel/calculations'
 import { estimateServiceHealth, latestGeneralService } from '../services/maintenance'
@@ -76,13 +77,13 @@ export function DashboardPage() {
     setAnswer(facts)
     setExplanation('')
     setAiMessage('')
-    if (settings?.aiProvider !== 'openai') return
+    if (!settings?.aiEnabled || settings.aiProvider === 'local') return
     if (isSensitiveAssistantQuestion(question)) {
       setAiMessage('Sensitive answers stay on this device and are not sent to the cloud.')
       return
     }
     setAsking(true)
-    void explainWithCloud(facts)
+    void explainWithCloud(facts, settings.aiProvider)
       .then(setExplanation)
       .catch((error) => setAiMessage(error instanceof Error ? error.message : 'Cloud explanation is unavailable. Showing the local answer.'))
       .finally(() => setAsking(false))
@@ -201,7 +202,7 @@ export function DashboardPage() {
         </Section>
       </section>
 
-      {settings?.aiEnabled ? <Section title="Ask MyRide"><div className="surface-panel overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 bg-stone-50/65 px-4 py-3.5 sm:px-5"><div><p className="text-sm font-semibold text-stone-950">Ask your riding journal</p><p className="mt-0.5 text-xs text-stone-500">Answers are calculated locally before any optional model explanation.</p></div><span className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${settings.aiProvider === 'openai' ? 'border-teal-200 bg-teal-50 text-teal-950' : 'border-stone-200 bg-white text-stone-600'}`}>{settings.aiProvider === 'openai' ? 'Optional OpenAI context' : 'Local answer'}</span></div><div className="p-4 sm:p-5"><form onSubmit={askMyRide} className="grid gap-3 sm:grid-cols-[1fr_auto]"><Input aria-label="Ask MyRide a question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What was my longest trip?" /><Button type="submit" disabled={asking}>{asking ? 'Asking...' : 'Ask'}</Button></form>{answer ? <div role="status" className="mt-5 rounded-xl border border-stone-200 bg-stone-50/70 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-teal-800">Journal answer</p><p className="mt-2 text-sm leading-6 text-stone-800">{answer}</p>{explanation ? <><div className="my-3 h-px bg-stone-200" /><p className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Model context</p><p className="mt-1.5 text-sm leading-6 text-stone-600">{explanation}</p></> : null}</div> : null}{aiMessage ? <p role="status" className="mt-3 text-sm text-amber-800">{aiMessage}</p> : null}</div></div></Section> : null}
+      {settings?.aiEnabled ? <Section title="Ask MyRide"><div className="surface-panel overflow-hidden"><div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 bg-stone-50/65 px-4 py-3.5 sm:px-5"><div><p className="text-sm font-semibold text-stone-950">Ask your riding journal</p><p className="mt-0.5 text-xs text-stone-500">Answers are calculated locally before any optional model explanation.</p></div><span className={`rounded-full border px-3 py-1.5 text-xs font-semibold ${settings.aiProvider !== 'local' ? 'border-teal-200 bg-teal-50 text-teal-950' : 'border-stone-200 bg-white text-stone-600'}`}>{settings.aiProvider === 'local' ? 'Local answer' : `${deviceAiProviders[settings.aiProvider].label} context`}</span></div><div className="p-4 sm:p-5"><form onSubmit={askMyRide} className="grid gap-3 sm:grid-cols-[1fr_auto]"><Input aria-label="Ask MyRide a question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="What was my longest trip?" /><Button type="submit" disabled={asking}>{asking ? 'Asking...' : 'Ask'}</Button></form>{answer ? <div role="status" className="mt-5 rounded-xl border border-stone-200 bg-stone-50/70 p-4"><p className="text-[10px] font-bold uppercase tracking-[0.13em] text-teal-800">Journal answer</p><p className="mt-2 text-sm leading-6 text-stone-800">{answer}</p>{explanation ? <><div className="my-3 h-px bg-stone-200" /><p className="text-xs font-bold uppercase tracking-[0.12em] text-stone-500">Model context</p><p className="mt-1.5 text-sm leading-6 text-stone-600">{explanation}</p></> : null}</div> : null}{aiMessage ? <p role="status" className="mt-3 text-sm text-amber-800">{aiMessage}</p> : null}</div></div></Section> : null}
     </div>
   )
 }

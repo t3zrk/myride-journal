@@ -152,7 +152,7 @@ export function validateDomainRecord(entity: DomainEntity, value: BaseRecord) {
       oneOf(entity, record, 'fuelUnit', ['litre', 'gallon'])
       oneOf(entity, record, 'temperatureUnit', ['C', 'F'])
       oneOf(entity, record, 'dateFormat', ['local', 'iso'])
-      oneOf(entity, record, 'aiProvider', ['local', 'openai'])
+      oneOf(entity, record, 'aiProvider', ['local', 'openai', 'gemini', 'anthropic', 'xai', 'openrouter', 'custom'])
       const currency = text(entity, record, 'currency')
       if (!/^[A-Z]{3}$/.test(currency)) invalid(entity, 'currency must be a three-letter uppercase code')
       const interval = number(entity, record, 'gpsIntervalSeconds')

@@ -32,7 +32,7 @@ export interface UserSettings extends BaseRecord {
   gpsIntervalSeconds: 30 | 60 | 120
   safeRangeReservePercent: number
   aiEnabled: boolean
-  aiProvider: 'local' | 'openai'
+  aiProvider: 'local' | 'openai' | 'gemini' | 'anthropic' | 'xai' | 'openrouter' | 'custom'
   maintenanceRemindersEnabled: boolean
 }
 

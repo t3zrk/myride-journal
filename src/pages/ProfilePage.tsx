@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
 import { DataManagement } from '../components/DataManagement'
-import { OpenAiKeySettings } from '../components/OpenAiKeySettings'
+import { AiProviderSettings } from '../components/AiProviderSettings'
 import { Button, ButtonLink } from '../components/ui/Button'
 import { Field, Input, Select, Textarea } from '../components/ui/Field'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -57,6 +57,7 @@ export function ProfilePage() {
   const [contactError, setContactError] = useState('')
   const activeMotorcycle = motorcycles.find((motorcycle) => motorcycle.active)
   const hasRecordedCosts = Boolean(dashboard?.expenses.length || dashboard?.fuelLogs.some((log) => log.totalCost !== undefined || log.pricePerLitre !== undefined))
+  const activeAiProvider = providerDraft ?? settings?.aiProvider ?? 'local'
 
   useEffect(() => {
     const refreshContacts = () => { void repository.emergencyContacts.all().then(setContacts) }
@@ -239,10 +240,10 @@ export function ProfilePage() {
       </Section>
 
       <Section title="AI" className="surface-panel px-5 md:px-6">
-        <div className="max-w-sm"><Field label="AI provider"><Select value={providerDraft ?? settings?.aiProvider ?? 'local'} disabled={!settings || providerSaving} onChange={(event) => void setAiProvider(event.target.value as UserSettings['aiProvider'])}><option value="local">On-device</option><option value="openai">OpenAI</option></Select></Field></div>
+        <div className="max-w-sm"><Field label="AI provider"><Select value={activeAiProvider} disabled={!settings || providerSaving} onChange={(event) => void setAiProvider(event.target.value as UserSettings['aiProvider'])}><option value="local">On-device</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option><option value="xai">xAI Grok</option><option value="openrouter">OpenRouter</option><option value="custom">Custom / OpenAI-compatible</option></Select></Field></div>
         <label className="mt-3 flex min-h-12 items-center gap-3 text-sm font-semibold"><input type="checkbox" className="size-5 accent-teal-900" disabled={!settings || aiSaving} checked={aiDraft ?? settings?.aiEnabled ?? false} onChange={(event) => void setAiEnabled(event.target.checked)} /> Enable Ask MyRide</label>
-        {(providerDraft ?? settings?.aiProvider ?? 'local') === 'openai' ? <OpenAiKeySettings /> : null}
-        <p className="mt-3 text-sm text-stone-600">OpenAI receives only the locally computed answer, never private safety fields. Without a device key, a configured server-side provider is used.</p>
+        <AiProviderSettings provider={activeAiProvider} />
+        <p className="mt-3 text-sm leading-6 text-stone-600">MyRide calculates the journal answer locally first. External providers receive only that computed answer, never private safety fields. Provider credentials and model choices stay in this browser.</p>
         {aiMessage ? <p role="status" className="mt-2 text-sm text-teal-900">{aiMessage}</p> : null}
       </Section>
 

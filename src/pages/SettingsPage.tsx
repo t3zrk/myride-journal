@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { DataManagement } from '../components/DataManagement'
-import { OpenAiKeySettings } from '../components/OpenAiKeySettings'
+import { AiProviderSettings } from '../components/AiProviderSettings'
 import { Button } from '../components/ui/Button'
 import { Field, Input, Select } from '../components/ui/Field'
 import { PageHeader } from '../components/ui/PageHeader'
@@ -99,9 +99,9 @@ export function SettingsPage() {
         </Section>
         <Section title="AI">
           <label className="flex min-h-11 items-center gap-3 rounded-md bg-stone-50 px-3 text-sm font-semibold"><input type="checkbox" className="size-5 accent-teal-900" checked={form.aiEnabled} onChange={(e) => setForm({ ...form, aiEnabled: e.target.checked })} /> Enable optional AI assistant</label>
-          <div className="mt-3 max-w-sm"><Field label="AI provider"><Select value={form.aiProvider} onChange={(event) => setForm({ ...form, aiProvider: event.target.value as UserSettings['aiProvider'] })}><option value="local">On-device</option><option value="openai">OpenAI</option></Select></Field></div>
-          {form.aiProvider === 'openai' ? <OpenAiKeySettings /> : null}
-          <p className="mt-2 text-sm text-stone-600">OpenAI receives only the locally computed answer; private safety fields are not included. A saved device key takes priority over a configured server-side provider.</p>
+          <div className="mt-4 max-w-sm"><Field label="AI provider"><Select value={form.aiProvider} onChange={(event) => setForm({ ...form, aiProvider: event.target.value as UserSettings['aiProvider'] })}><option value="local">On-device</option><option value="openai">OpenAI</option><option value="gemini">Google Gemini</option><option value="anthropic">Anthropic Claude</option><option value="xai">xAI Grok</option><option value="openrouter">OpenRouter</option><option value="custom">Custom / OpenAI-compatible</option></Select></Field></div>
+          <AiProviderSettings provider={form.aiProvider} />
+          <p className="mt-3 text-sm leading-6 text-stone-600">MyRide calculates the journal answer locally first. External providers receive only that computed answer; private safety fields stay local. Each provider can keep its own browser-only credential and model ID.</p>
         </Section>
         <Button type="submit" disabled={!settings || !dashboard}>Save settings</Button>
         {saveMessage ? <p role="status" className="text-sm text-teal-900">{saveMessage}</p> : null}

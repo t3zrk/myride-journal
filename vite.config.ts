@@ -3,8 +3,11 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const base = process.env.GITHUB_ACTIONS === 'true' ? '/myride-journal/' : '/'
+
 // https://vite.dev/config/
 export default defineConfig({
+  base,
   plugins: [
     react(),
     tailwindcss(),
@@ -18,13 +21,14 @@ export default defineConfig({
         theme_color: '#12342E',
         background_color: '#F4F6F4',
         display: 'standalone',
+        start_url: base,
+        scope: base,
         icons: [
-          { src: '/pwa-icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/pwa-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: `${base}pwa-icon-192.png`, sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: `${base}pwa-icon-512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
         ],
       },
       workbox: {
-        navigateFallback: '/index.html',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.tile\.openstreetmap\.org\/.*/i,
